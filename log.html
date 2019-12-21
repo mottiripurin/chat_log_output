@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+	<title></title>
+<script type="text/javascript">
+	function fileReadTest(obj){
+		const object	= obj.value;//test
+		const fileData	= event.target.files[0];//ファイルデータを取得
+		const r			= new FileReader();
+		r.readAsText(fileData);
+		//ロードイベント後の処理
+		r.addEventListener('load',function(){
+			const	val			=	r.result;//文字列を取得
+			const	jsonData	=	JSON.parse(val);//JSON形式に変換
+			
+			const	br			=	"\r\n";//改行コード
+			
+			const	KPname		=	document.getElementById('KPname').value;//KP
+			const	KPCname		=	document.getElementById('KPCname').value;//KPC(なくても可)
+			const	PCname		=	document.getElementById('PCname').value;//PC
+			const	KPcolor		=	document.getElementById('KPcolor').value;//KP字幕色
+			const	KPCcolor	=	document.getElementById('KPCcolor').value;//KPC字幕色(なくても可)
+			const	PCcolor		=	document.getElementById('PCcolor').value;//PC字幕色
+			
+			const	scenario	=	document.getElementById('scenario').value;//シナリオ名
+			
+			//HTMLの上のとこ 固定文字列
+			const	header	=	"<!DOCTYPE html><br>"+
+								"<html lang=\"ja\">" + br +
+								"<head>" + br +
+								"<meta http-equiv='Content-Type' content='text/html; charset=UTF-8' />" + br +
+								"<title>" + scenario +"_log</title><br>" + br +
+								"</head>" + br +
+								"<body>" + br;
+			//最後のとこ 固定文字列
+			const	footer	=	"</body><br>" + br + "</html>";
+			//発言の前後にくっつける
+			//べったに上げるなら太字と改行タグ不要
+			const	front_kp	=	"<span style=\"color:#" + KPcolor + ";\">" + KPname + "：";//KP
+			const	front_kpc	=	"<span style=\"color:#" + KPCcolor + ";\">" + KPCname + "：";//KPC
+			const	front_pc	=	"<span style=\"color:#" + PCcolor + ";\">" + PCname + "：";//PC
+			
+			const	end			=	"</span><br />" + br;//ここは全員共通
+			
+			//ヘッダ部分を作成
+			var		html_value	=	header;
+					html_value	+=	br;
+			
+			var		honbun		=	"<span style=\"font-weight:bold;\">" + scenario + end;//本文用
+			//読み込んだJSONデータにHTMLタグをくっつける
+			jsonData.forEach(function(value){
+				const	senderName	=	value[1].senderName;//発言者
+				const	message		=	value[1].message;//チャット本文
+				
+				//HTMLの文字列を生成
+				if(senderName === KPname && message.indexOf(KPCname + '：') == -1){//KP発言か？
+					honbun	+=	front_kp + message + end;
+				}else if(message.indexOf(KPCname + '：') > -1){//KPCの発言か？
+					honbun	+=	front_kpc + message + end;
+				}else if(senderName === PCname){//PCの発言か？
+					honbun	+=	front_pc + message + end;
+				}
+			});
+			
+			html_value	+=	honbun;
+			
+			//閉じタグ付ける
+			html_value	+=	footer;
+			
+			//もし空っぽだったら仮タイトルを設定しておく
+			if(scenario === "" || scenario == null){
+				scenario = "session_log";
+			}
+			
+			try{
+				//書き出し処理
+				var blob	= new Blob([html_value],{type: "text/html_value;charset=SJIS;"});
+				var a		= document.createElement("a");
+				a.href		= URL.createObjectURL(blob);
+				a.target	= '_blank';
+				a.download	= scenario + '.html';//とりあえずシナリオ名をタイトルとして設定
+				a.click();
+				document.getElementById('resultArea').innerHTML = 'ファイルの書き出しに成功しました!!(*´∀`*)';
+			}catch(e){
+				document.getElementById('resultArea').innerHTML = 'ファイルの書き出しに失敗しました!!(;・`д・́)';
+			}
+		})
+	}
+  </script>
+
+</head>
+<body>
+	JSON形式のチャットログを選択してください<br />
+	HTML形式にパースしたファイルを出力します<br />
+	チャットについてはKPCだけ「KPC名：～～～」で喋らせてKPとPCは普通にそのまま発言という想定です<br />
+	<div>
+		シナリオ名:<input	type="text" id="scenario"	size="20" value=""/>
+	</div>
+	<br />
+	※字幕色は16進のカラーコードで表記してください(#不要) <a href="https://www.colordic.org/picker">参考ページ</a><br />
+	<div>
+		KP:<input			type="text" id="KPname"		size="10" value="KP"/>
+		KP字幕色:<input		type="text" id="KPcolor"	size="10" value="006600"/>
+	</div>
+	<div>
+		KPC:<input			type="text" id="KPCname"	size="10" value=""/>
+		KPC字幕色:<input	type="text" id="KPCcolor"	size="10" value=""/>
+	</div>
+	<div>
+		PC:<input			type="text" id="PCname"		size="10" value=""/>
+		PC字幕色:<input		type="text" id="PCcolor"	size="10" value=""/>
+	</div>
+	<br />
+	
+	<form name="fileGetForm">
+		<input id="fileGetButton" name="fileGetButton" type="file" onchange="fileReadTest(this);"/>
+	</form>
+	
+	<hr />
+	
+	処理結果<br />
+	<div id="resultArea"></div>
+</body>
+</html>
