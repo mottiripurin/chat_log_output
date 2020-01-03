@@ -57,7 +57,8 @@
 				if(senderName === KPname && message.indexOf(KPCname + '：') == -1){//KP発言か？
 					honbun	+=	front_kp + message + end;
 				}else if(message.indexOf(KPCname + '：') > -1){//KPCの発言か？
-					honbun	+=	front_kpc + message + end;
+					const	replaceMessage	=	message.replace(KPCname + '：','');
+					honbun	+=	front_kpc + replaceMessage + end;
 				}else if(senderName === PCname){//PCの発言か？
 					honbun	+=	front_pc + message + end;
 				}
