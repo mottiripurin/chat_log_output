@@ -17,9 +17,11 @@
 			const	br			=	"\r\n";//改行コード
 			
 			const	KPname		=	document.getElementById('KPname').value;//KP
+			const	PLname		=	document.getElementById('PLname').value;//PL
 			const	KPCname		=	document.getElementById('KPCname').value;//KPC(なくても可)
 			const	PCname		=	document.getElementById('PCname').value;//PC
 			const	KPcolor		=	document.getElementById('KPcolor').value;//KP字幕色
+			const	PLcolor		=	document.getElementById('PLcolor').value;//PL字幕色
 			const	KPCcolor	=	document.getElementById('KPCcolor').value;//KPC字幕色(なくても可)
 			const	PCcolor		=	document.getElementById('PCcolor').value;//PC字幕色
 			
@@ -38,6 +40,7 @@
 			//発言の前後にくっつける
 			//べったに上げるなら太字と改行タグ不要
 			const	front_kp	=	"<span style=\"color:#" + KPcolor + ";\">" + KPname + "：";//KP
+			const	front_pl	=	"<span style=\"color:#" + PLcolor + ";\">" + PLname + "：";//PL
 			const	front_kpc	=	"<span style=\"color:#" + KPCcolor + ";\">" + KPCname + "：";//KPC
 			const	front_pc	=	"<span style=\"color:#" + PCcolor + ";\">" + PCname + "：";//PC
 			
@@ -54,13 +57,22 @@
 				const	message		=	value[1].message;//チャット本文
 				
 				//HTMLの文字列を生成
-				if(senderName === KPname && message.indexOf(KPCname + '：') == -1){//KP発言か？
-					honbun	+=	front_kp + message + end;
-				}else if(message.indexOf(KPCname + '：') > -1){//KPCの発言か？
-					const	replaceMessage	=	message.replace(KPCname + '：','');
-					honbun	+=	front_kpc + replaceMessage + end;
-				}else if(senderName === PCname){//PCの発言か？
-					honbun	+=	front_pc + message + end;
+				if(senderName === KPname){	//KPとKPCの発言
+					if(message.indexOf(KPCname + '：') == -1){//KP発言か？
+						honbun	+=	front_kp + message + end;
+					}else if(message.indexOf(KPCname + '：') > -1){//KPCの発言か？
+						const	replaceMessage	=	message.replace(KPCname + '：','');
+						honbun	+=	front_kpc + replaceMessage + end;
+					}
+				}
+				
+				if(senderName === PLname){	//PLとPCの発言
+					if(message.indexOf(PCname + '：') > -1){//PC発言か？
+						const	replaceMessage	=	message.replace(PCname + '：','');
+						honbun	+=	front_pc + replaceMessage + end;
+					}else if(message.indexOf(PCname + '：') == -1){//PLの発言か？
+						honbun	+=	front_pl + message + end;
+					}
 				}
 			});
 			
@@ -94,7 +106,9 @@
 <body>
 	JSON形式のチャットログを選択してください<br />
 	HTML形式にパースしたファイルを出力します<br />
-	チャットについてはKPCだけ「KPC名：～～～」で喋らせてKPとPCは普通にそのまま発言という想定です<br />
+	チャットについてはKPCが「KPC名：～～～」、PCは「PC名：～～～」で喋らせてKPとPL発言は普通にそのままという想定です<br />
+	ピンク：FF66CC<br />
+	水色　：00CCFF<br />
 	<div>
 		シナリオ名:<input	type="text" id="scenario"	size="20" value=""/>
 	</div>
@@ -103,6 +117,10 @@
 	<div>
 		KP:<input			type="text" id="KPname"		size="10" value="KP"/>
 		KP字幕色:<input		type="text" id="KPcolor"	size="10" value="006600"/>
+	</div>
+	<div>
+		PL:<input			type="text" id="PLname"		size="10" value="PL"/>
+		PL字幕色:<input		type="text" id="PLcolor"	size="10" value="666666"/>
 	</div>
 	<div>
 		KPC:<input			type="text" id="KPCname"	size="10" value=""/>
